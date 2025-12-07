@@ -1,4 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  AfterViewInit,
+  ViewChild,
+  ElementRef,
+  ChangeDetectorRef,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { ProductService } from '../services/product.service';
@@ -12,13 +19,16 @@ import { Category } from '../models/category.interface';
   templateUrl: './home.html',
   styleUrl: './home.css',
 })
-export class Home implements OnInit {
+export class Home implements OnInit, AfterViewInit {
   featuredProducts: Product[] = [];
   categories: Category[] = [];
+  isDropdownOpen = false;
+  @ViewChild('video') video!: ElementRef<HTMLVideoElement>;
 
   constructor(
     private productService: ProductService,
-    private categoryService: CategoryService
+    private categoryService: CategoryService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -26,14 +36,23 @@ export class Home implements OnInit {
     this.loadCategories();
   }
 
+  ngAfterViewInit(): void {
+    this.cdr.detectChanges();
+    if (this.video && this.video.nativeElement) {
+      const videoElement = this.video.nativeElement;
+      videoElement.muted = true;
+      videoElement.play().catch((err) => console.log('Video play failed:', err));
+    }
+  }
+
   private loadFeaturedProducts(): void {
-    this.productService.getFeaturedProducts().subscribe(products => {
+    this.productService.getFeaturedProducts().subscribe((products) => {
       this.featuredProducts = products;
     });
   }
 
   private loadCategories(): void {
-    this.categoryService.getAllCategories().subscribe(categories => {
+    this.categoryService.getAllCategories().subscribe((categories) => {
       this.categories = categories;
     });
   }
