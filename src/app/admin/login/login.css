@@ -1,0 +1,10 @@
+.bg-snapfood {
+  background-color: var(--snapfood-primary);
+}
+.text-snapfood {
+  color: var(--snapfood-primary);
+}
+
+.shadow {
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+}

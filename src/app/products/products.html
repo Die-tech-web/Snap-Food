@@ -1,29 +1,35 @@
 <!-- Header -->
-<header class="bg-green-100 shadow-md fixed top-0 left-0 right-0 z-50">
+<header class="bg-snapfood/10 shadow-md fixed top-0 left-0 right-0 z-50">
   <div class="container mx-auto px-4 py-4 flex justify-between items-center">
-    <div class="text-2xl font-bold text-green-600">SnapFood</div>
+    <div class="text-2xl font-bold text-snapfood">SnapFood</div>
     <nav class="space-x-6 flex items-center">
-      <a
-        routerLink="/"
-        class="text-gray-700 hover:text-green-600 transition duration-300"
+      <a routerLink="/" class="text-gray-700 hover:text-snapfood transition duration-300"
         >Accueil</a
       >
       <div class="relative">
         <button
           (click)="isDropdownOpen = !isDropdownOpen"
-          class="text-gray-700 hover:text-green-600 transition duration-300 flex items-center"
+          class="text-gray-700 hover:text-snapfood transition duration-300 flex items-center"
         >
           Catégories
           <svg class="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M19 9l-7 7-7-7"
+            ></path>
           </svg>
         </button>
-        <div *ngIf="isDropdownOpen" class="absolute top-full mt-2 w-48 bg-white rounded-md shadow-lg z-50">
+        <div
+          *ngIf="isDropdownOpen"
+          class="absolute top-full mt-2 w-48 bg-white rounded-md shadow-lg z-50"
+        >
           <div class="py-1">
             <a
               *ngFor="let category of categories"
               routerLink="/produits"
-              [queryParams]="{category: category.name}"
+              [queryParams]="{ category: category.id }"
               class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
               (click)="isDropdownOpen = false"
             >
@@ -32,14 +38,10 @@
           </div>
         </div>
       </div>
-      <a
-        routerLink="/produits"
-        class="text-gray-700 hover:text-green-600 transition duration-300"
+      <a routerLink="/produits" class="text-gray-700 hover:text-snapfood transition duration-300"
         >Produits</a
       >
-      <a
-        routerLink="/contact"
-        class="text-gray-700 hover:text-green-600 transition duration-300"
+      <a routerLink="/contact" class="text-gray-700 hover:text-snapfood transition duration-300"
         >Nous contacter</a
       >
     </nav>
@@ -49,51 +51,177 @@
 <!-- Section Produits -->
 <section class="pt-20 pb-16 bg-white">
   <div class="container mx-auto px-4">
-    <h1 class="text-3xl font-bold text-center mb-12">Tous nos Produits</h1>
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-      <div
-        *ngFor="let product of filteredProducts"
-        class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition duration-300"
-      >
-        <img [src]="product.images[0]" [alt]="product.name" class="w-full h-48 object-cover" />
-        <div class="p-4">
-          <h3 class="text-lg font-semibold mb-2">{{ product.name }}</h3>
-          <p class="text-gray-600 text-sm mb-4">{{ product.description }}</p>
-          <div class="flex justify-between items-center">
-            <span class="text-xl font-bold text-green-600">{{ product.price }} FCFA</span>
-            <button
-              (click)="orderOnWhatsApp(product.name)"
-              class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded transition duration-300"
+    <h1 class="text-3xl font-bold text-center mb-8">Tous nos Produits</h1>
+
+    <!-- Filtres par catégorie (Sidebar) -->
+    <div class="flex flex-col md:flex-row gap-8 mb-12">
+      <!-- Barre des catégories (sticky) -->
+      <aside class="md:w-48 md:sticky md:top-24 md:h-max">
+        <h2 class="text-xl font-semibold mb-4 text-gray-800">Catégories</h2>
+        <div class="space-y-2">
+          <!-- Bouton "Tous les produits" -->
+          <button
+            (click)="showAllProducts()"
+            [ngClass]="{ 'bg-snapfood text-white': !selectedCategory }"
+            class="w-full text-left px-4 py-2 rounded-lg transition duration-300 border border-snapfood hover:bg-snapfood/10"
+          >
+            Tous les produits
+          </button>
+
+          <!-- Boutons filtres par catégorie -->
+          <button
+            *ngFor="let category of categories"
+            (click)="filterByCategory(category.id)"
+            [ngClass]="{ 'bg-snapfood text-white': selectedCategory === category.id }"
+            class="w-full text-left px-4 py-2 rounded-lg transition duration-300 border border-snapfood hover:bg-snapfood/10"
+          >
+            {{ category.icon }} {{ category.name }}
+          </button>
+        </div>
+      </aside>
+
+      <!-- Grille de produits -->
+      <div class="flex-1">
+        <!-- Indicateur de résultats -->
+        <div class="mb-4 text-sm text-gray-600">
+          <span
+            >{{ allFilteredProducts.length }} produit{{
+              allFilteredProducts.length > 1 ? 's' : ''
+            }}
+            trouvé{{ allFilteredProducts.length > 1 ? 's' : '' }}</span
+          >
+          <span *ngIf="selectedCategory" class="ml-2">
+            | Page {{ currentPage }} sur {{ totalPages }}
+          </span>
+        </div>
+
+        <!-- Grille des produits paginés -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div
+            *ngFor="let product of paginatedProducts"
+            class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition duration-300 flex flex-col h-full"
+          >
+            <!-- Image wrapper -->
+            <div
+              class="w-full relative flex items-stretch justify-center bg-gray-50 overflow-hidden p-0"
+              [ngClass]="{
+                'h-48': product.imageOrientation === 'landscape',
+                'h-64': product.imageOrientation === 'portrait',
+                'h-56': product.imageOrientation === 'square' || !product.imageOrientation
+              }"
             >
-              Commander
+              <!-- Skeleton pendant le chargement -->
+              <div
+                *ngIf="!product.imageLoaded"
+                class="absolute inset-0 flex items-center justify-center bg-gray-200 animate-pulse"
+              ></div>
+
+              <!-- Image avec lazy-loading -->
+              <img
+                [src]="product.images[0]"
+                [alt]="product.name"
+                loading="lazy"
+                decoding="async"
+                (load)="onImageLoad($event, product)"
+                [class]="
+                  'w-full h-full img-fade block ' +
+                  (product.imageOrientation === 'portrait'
+                    ? 'object-cover object-center'
+                    : 'object-cover object-center')
+                "
+                [attr.draggable]="false"
+              />
+            </div>
+
+            <!-- Contenu de la card -->
+            <div class="p-4 flex flex-col flex-1">
+              <h3 class="text-lg font-semibold mb-2">{{ product.name }}</h3>
+              <p class="text-gray-600 text-sm mb-4 flex-1">{{ product.description }}</p>
+              <div class="flex justify-between items-center mt-auto">
+                <!-- <span class="text-lg font-semibold text-snapfood">{{ product.price }} FCFA</span> -->
+                <div class="flex items-baseline text-snapfood">
+                  <span class="text-lg font-semibold">{{ product.price }}</span>
+                  <span class="text-sm ml-0.5">FCFA</span>
+                </div>
+
+                <button
+                  (click)="openOrderModal(product)"
+                  class="bg-snapfood hover:bg-snapfood-dark text-white px-4 py-2 rounded transition duration-300 shadow focus:outline-none focus:ring-2 focus:ring-snapfood"
+                >
+                  Commander
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Affichage si aucun produit -->
+        <div *ngIf="paginatedProducts.length === 0" class="text-center py-12">
+          <p class="text-gray-500 text-lg">Aucun produit disponible dans cette catégorie.</p>
+        </div>
+
+        <!-- Pagination -->
+        <div *ngIf="totalPages > 1" class="mt-12 flex flex-col items-center gap-4">
+          <!-- Boutons Précédent/Suivant -->
+          <div class="flex gap-4">
+            <button
+              (click)="previousPage()"
+              [disabled]="currentPage === 1"
+              [ngClass]="{ 'opacity-50 cursor-not-allowed': currentPage === 1 }"
+              class="px-6 py-2 bg-snapfood text-white rounded-lg hover:bg-snapfood transition duration-300"
+            >
+              ← Précédent
+            </button>
+            <button
+              (click)="nextPage()"
+              [disabled]="currentPage === totalPages"
+              [ngClass]="{ 'opacity-50 cursor-not-allowed': currentPage === totalPages }"
+              class="px-6 py-2 bg-snapfood text-white rounded-lg hover:bg-snapfood transition duration-300"
+            >
+              Suivant →
             </button>
           </div>
+
+          <!-- Numéros de pages -->
+          <div class="flex gap-2 flex-wrap justify-center">
+            <button
+              *ngFor="let page of getPageNumbers()"
+              (click)="goToPage(page)"
+              [ngClass]="{ 'bg-snapfood text-white': page === currentPage }"
+              class="px-3 py-1 border border-snapfood text-snapfood rounded-lg hover:bg-snapfood/10 transition duration-300"
+            >
+              {{ page }}
+            </button>
+          </div>
+
+          <!-- Indicateur page actuelle -->
+          <div class="text-sm text-gray-600">Page {{ currentPage }} sur {{ totalPages }}</div>
         </div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- Footer -->
-<footer class="bg-green-100 text-gray-800 py-8">
-  <div class="container mx-auto px-4 text-center">
-    <h3 class="text-xl font-bold mb-4 text-green-600">SnapFood</h3>
-    <p class="mb-4">Les meilleurs produits alimentaires frais du Sénégal</p>
-    <div class="flex justify-center space-x-6">
-      <a routerLink="/" class="hover:text-green-600 transition duration-300">Accueil</a>
-      <a routerLink="/produits" class="hover:text-green-600 transition duration-300">Produits</a>
-      <a routerLink="/contact" class="hover:text-green-600 transition duration-300">Contact</a>
-    </div>
-    <p class="mt-4 text-sm">&copy; 2024 SnapFood. Tous droits réservés.</p>
-  </div>
-</footer>
+<!-- Footer supprimé sur la page Produits (non affiché) -->
+
+<!-- Modale de commande -->
+<app-order-modal
+  *ngIf="showOrderModal && selectedProduct"
+  [show]="showOrderModal"
+  [productName]="selectedProduct.name"
+  [productPrice]="selectedProduct.price"
+  [productImage]="selectedProduct.images && selectedProduct.images[0]"
+  [productId]="selectedProduct.id"
+  (close)="closeOrderModal()"
+  (confirm)="confirmOrder($event)"
+></app-order-modal>
 
 <!-- Bouton WhatsApp flottant -->
 <div class="fixed bottom-6 right-6 z-50">
   <a
     href="https://wa.me/221778801947?text=Bonjour, je veux commander des produits"
     target="_blank"
-    class="bg-green-600 hover:bg-green-700 text-white p-4 rounded-full shadow-lg transition duration-300 flex items-center justify-center"
+    class="bg-snapfood hover:bg-snapfood text-white p-4 rounded-full shadow-lg transition duration-300 flex items-center justify-center"
   >
     <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
       <path

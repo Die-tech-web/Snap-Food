@@ -1,84 +1,70 @@
 import { Injectable } from '@angular/core';
-import { Observable, of } from 'rxjs';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { Observable, throwError } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
 import { Product } from '../models/product.interface';
 
-@Injectable({
-  providedIn: 'root'
-})
+const API_ROOT = 'http://localhost:3000'; // JSON Server default. Change if needed.
+
+@Injectable({ providedIn: 'root' })
 export class ProductService {
+  private endpoint = `${API_ROOT}/products`;
 
-  private products: Product[] = [
-    // Fruits secs & Noix
-    {
-      id: '1',
-      name: 'Noix de Cajou Grillées',
-      description: 'Noix de cajou fraîchement grillées, riches en protéines.',
-      price: 15000,
-      categoryId: 'fruits-secs-noix',
-      images: ['assets/images/Fruits secs-Noix/_ (15).jpeg'],
-      available: true,
-      featured: true
-    },
-    {
-      id: '2',
-      name: 'Amandes Naturelles',
-      description: 'Amandes bio, parfaites pour les snacks sains.',
-      price: 12000,
-      categoryId: 'fruits-secs-noix',
-      images: ['assets/images/Fruits secs-Noix/Dreams are like dry fruits_who else want them in sweets....But can\'t deny, manching dry'],
-      available: true,
-      featured: false
-    },
-    // Fruits & Légumes frais
-    {
-      id: '3',
-      name: 'Mangue Fraîche',
-      description: 'Mangues juteuses du Sénégal, pleines de vitamines.',
-      price: 5000,
-      categoryId: 'fruits-legumes',
-      images: ['assets/images/fruits-legumes/_ (1).jpeg'],
-      available: true,
-      featured: true
-    },
-    {
-      id: '4',
-      name: 'Tomates Bio',
-      description: 'Tomates rouges et fermes, cultivées localement.',
-      price: 3000,
-      categoryId: 'fruits-legumes',
-      images: ['assets/images/fruits-legumes/_ (2).jpeg'],
-      available: true,
-      featured: false
-    },
-    // Snacks & Apéritifs
-    {
-      id: '5',
-      name: 'Thiéré Fait Maison',
-      description: 'Plat traditionnel sénégalais, savoureux et authentique.',
-      price: 8000,
-      categoryId: 'snacks',
-      images: ['assets/images/Snacks/Thiéré fait maison.jpeg'],
-      available: true,
-      featured: true
-    },
-    // Ajouter plus selon les catégories...
-  ];
+  constructor(private http: HttpClient) {}
 
-  constructor() { }
-
-  getAllProducts(): Observable<Product[]> {
-    return of(this.products);
+  list(params?: { _page?: number; _limit?: number; q?: string }): Observable<Product[]> {
+    let httpParams = new HttpParams();
+    if (params) {
+      if (params._page) httpParams = httpParams.set('_page', String(params._page));
+      if (params._limit) httpParams = httpParams.set('_limit', String(params._limit));
+      if (params.q) httpParams = httpParams.set('q', params.q);
+    }
+    return this.http.get<Product[]>(this.endpoint, { params: httpParams }).pipe(
+      catchError((err) => {
+        console.error('Product list error', err);
+        return throwError(() => err);
+      })
+    );
   }
 
+  /** Backwards compatibility helper used by some existing components */
   getFeaturedProducts(): Observable<Product[]> {
-    return of(this.products.filter(p => p.featured));
+    return this.list().pipe(map((products) => products.filter((p) => !!p.featured)));
   }
 
-  getProductsByCategory(categoryId: string): Observable<Product[]> {
-    return of(this.products.filter(p => p.categoryId === categoryId));
+  get(id: string): Observable<Product> {
+    return this.http.get<Product>(`${this.endpoint}/${id}`).pipe(
+      catchError((err) => {
+        console.error('Get product error', err);
+        return throwError(() => err);
+      })
+    );
   }
 
-  getProductById(id: string): Observable<Product | undefined> {
-    return of(this.products.find(p => p.id === id));
+  create(product: Partial<Product>): Observable<Product> {
+    return this.http.post<Product>(this.endpoint, product).pipe(
+      catchError((err) => {
+        console.error('Create product error', err);
+        return throwError(() => err);
+      })
+    );
+  }
+
+  update(id: string, product: Partial<Product>): Observable<Product> {
+    return this.http.put<Product>(`${this.endpoint}/${id}`, product).pipe(
+      catchError((err) => {
+        console.error('Update product error', err);
+        return throwError(() => err);
+      })
+    );
+  }
+
+  delete(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.endpoint}/${id}`).pipe(
+      catchError((err) => {
+        console.error('Delete product error', err);
+        return throwError(() => err);
+      })
+    );
   }
 }

@@ -2,9 +2,43 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Couleur personnalisée SnapFood - Vert turquoise #009791 */
+:root {
+  --snapfood-primary: #009791;
+  --snapfood-primary-hover: #007a6c;
+  --snapfood-primary-dark: #005f5a;
+}
+
+.bg-snapfood {
+  background-color: var(--snapfood-primary);
+}
+
+.bg-snapfood:hover {
+  background-color: var(--snapfood-primary-hover);
+}
+
+.text-snapfood {
+  color: var(--snapfood-primary);
+}
+
+.border-snapfood {
+  border-color: var(--snapfood-primary);
+}
+
 .footer {
-  background-color: #38a169; /* Couleur verte */
+  background-color: var(--snapfood-primary); /* Couleur verte turquoise */
   color: white;
   padding: 1rem;
   text-align: center;
+}
+
+/* Transition pour les images : fondu lors du chargement */
+.img-fade {
+  transition: opacity 250ms ease-in-out, transform 250ms ease-in-out;
+  opacity: 1;
+}
+
+/* Quand l'image n'est pas encore chargée, on la rend invisible via l'inline class contrôlée par Angular */
+.img-fade[style*='opacity: 0'] {
+  opacity: 0;
 }

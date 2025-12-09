@@ -1,0 +1,35 @@
+.bg-snapfood {
+  background-color: var(--snapfood-primary);
+}
+.text-snapfood {
+  color: var(--snapfood-primary);
+}
+.border-snapfood {
+  border-color: var(--snapfood-primary);
+}
+
+/* Modal smooth transitions */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.fixed.inset-0 {
+  animation: slideIn 0.2s ease-out;
+}
+
+/* Hover effects on cards */
+.hover\:shadow-lg:hover {
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+/* Smooth button transitions */
+button {
+  transition: all 0.2s ease;
+}

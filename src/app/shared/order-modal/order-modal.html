@@ -1,0 +1,56 @@
+<div
+  *ngIf="show"
+  class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40"
+>
+  <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-8 relative animate-fadeIn">
+    <button
+      (click)="onClose()"
+      class="absolute top-2 right-2 text-gray-400 hover:text-gray-700 text-2xl"
+    >
+      &times;
+    </button>
+    <h2 class="text-2xl font-bold mb-4 text-snapfood">Finaliser la commande</h2>
+
+    <!-- Aperçu du produit -->
+    <div class="mb-4 p-3 bg-gray-50 rounded">
+      <p class="mb-2">
+        Produit : <span class="font-semibold">{{ productName }}</span>
+      </p>
+      <p class="mb-2">
+        Prix : <span class="font-semibold">{{ productPrice | number }} FCFA</span>
+      </p>
+      <div *ngIf="productImage" class="mt-2">
+        <img [src]="productImage" alt="Produit" class="w-full h-32 object-cover rounded" />
+      </div>
+    </div>
+
+    <form (ngSubmit)="onConfirm()" autocomplete="off">
+      <!-- Numéro de téléphone -->
+      <label class="block mb-2 font-medium">
+        Numéro de téléphone <span class="text-red-500">*</span>
+      </label>
+      <input
+        type="tel"
+        [(ngModel)]="phone"
+        name="phone"
+        maxlength="9"
+        minlength="9"
+        class="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-snapfood mb-3"
+        placeholder="Ex: 778801947"
+        required
+      />
+
+      <!-- Messages d'erreur -->
+      <div *ngIf="error" class="text-red-500 text-sm mb-3">{{ error }}</div>
+
+      <!-- Bouton de confirmation -->
+      <button
+        type="submit"
+        [disabled]="loading"
+        class="mt-6 w-full bg-snapfood hover:bg-snapfood-dark text-white font-semibold py-2 rounded transition duration-300 disabled:opacity-50"
+      >
+        {{ loading ? 'Envoi en cours...' : 'Commander sur WhatsApp' }}
+      </button>
+    </form>
+  </div>
+</div>

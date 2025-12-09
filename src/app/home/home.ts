@@ -46,13 +46,13 @@ export class Home implements OnInit, AfterViewInit {
   }
 
   private loadFeaturedProducts(): void {
-    this.productService.getFeaturedProducts().subscribe((products) => {
-      this.featuredProducts = products;
+    this.productService.list().subscribe((products) => {
+      this.featuredProducts = products.filter((p) => p.featured);
     });
   }
 
   private loadCategories(): void {
-    this.categoryService.getAllCategories().subscribe((categories) => {
+    this.categoryService.list().subscribe((categories) => {
       this.categories = categories;
     });
   }

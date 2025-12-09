@@ -1,75 +1,64 @@
 import { Injectable } from '@angular/core';
-import { Observable, of } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { Observable, throwError } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { Category } from '../models/category.interface';
 
-@Injectable({
-  providedIn: 'root',
-})
+const API_ROOT = 'http://localhost:3000';
+
+@Injectable({ providedIn: 'root' })
 export class CategoryService {
-  private categories: Category[] = [
-    {
-      id: 'fruits-secs-noix',
-      name: 'Fruits secs & Noix',
-      icon: '🥜',
-      description: 'Noix et fruits secs de qualité supérieure',
-    },
-    {
-      id: 'graines-cereales',
-      name: 'Graines & Céréales',
-      icon: '🌾',
-      description: 'Graines et céréales biologiques',
-    },
-    {
-      id: 'snacks',
-      name: 'Snacks & Apéritifs',
-      icon: '🍪',
-      description: 'Snacks savoureux pour toutes occasions',
-    },
-    {
-      id: 'fruits-legumes',
-      name: 'Fruits & Légumes frais',
-      icon: '🥗',
-      description: 'Produits frais directement des champs',
-    },
-    {
-      id: 'viandes-poissons',
-      name: 'Viandes & Poissons',
-      icon: '🥖',
-      description: 'Viandes et poissons frais',
-    },
-    {
-      id: 'epicerie',
-      name: 'Épicerie',
-      icon: '🍚',
-      description: 'Riz, huile, épices et produits essentiels',
-    },
-    {
-      id: 'produits-laitiers',
-      name: 'Produits laitiers',
-      icon: '🥛',
-      description: 'Lait, fromage et produits laitiers frais',
-    },
-    {
-      id: 'patisseries',
-      name: 'Pâtisseries & Desserts',
-      icon: '🍰',
-      description: 'Douceurs et pâtisseries artisanales',
-    },
-    {
-      id: 'terroir-senegalais',
-      name: 'Produits du terroir sénégalais',
-      icon: '🇸🇳',
-      description: 'Spécialités authentiques du Sénégal',
-    },
-  ];
+  private endpoint = `${API_ROOT}/categories`;
 
-  constructor() {}
+  constructor(private http: HttpClient) {}
 
-  getAllCategories(): Observable<Category[]> {
-    return of(this.categories);
+  list(): Observable<Category[]> {
+    return this.http.get<Category[]>(this.endpoint).pipe(
+      catchError((err) => {
+        console.error('Category list error', err);
+        return throwError(() => err);
+      })
+    );
   }
 
-  getCategoryById(id: string): Observable<Category | undefined> {
-    return of(this.categories.find((c) => c.id === id));
+  /** Backwards compatibility alias used by some components */
+  getAllCategories(): Observable<Category[]> {
+    return this.list();
+  }
+
+  get(id: string): Observable<Category> {
+    return this.http.get<Category>(`${this.endpoint}/${id}`).pipe(
+      catchError((err) => {
+        console.error('Get category error', err);
+        return throwError(() => err);
+      })
+    );
+  }
+
+  create(cat: Partial<Category>): Observable<Category> {
+    return this.http.post<Category>(this.endpoint, cat).pipe(
+      catchError((err) => {
+        console.error('Create category error', err);
+        return throwError(() => err);
+      })
+    );
+  }
+
+  update(id: string, cat: Partial<Category>): Observable<Category> {
+    return this.http.put<Category>(`${this.endpoint}/${id}`, cat).pipe(
+      catchError((err) => {
+        console.error('Update category error', err);
+        return throwError(() => err);
+      })
+    );
+  }
+
+  delete(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.endpoint}/${id}`).pipe(
+      catchError((err) => {
+        console.error('Delete category error', err);
+        return throwError(() => err);
+      })
+    );
   }
 }
